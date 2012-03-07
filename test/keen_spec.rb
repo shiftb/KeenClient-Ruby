@@ -11,5 +11,16 @@ describe Keen::Client do
   end
   
   # TODO spec it out, lazy bones!
+  #
+  #
+  # Each time an event is logged, we'll store a json-serialized, base64-
+  # encoded, and gzipped hash that loos like this:
+  #
+  # {
+  #   :project_id       => "alsdjfaldskfjadskladsklj",
+  #   :auth_token       => "aslkjflk3wjfaklsjdflkasdjflkadjflakdj211",
+  #   :collection_name  => "purchases",
+  #   :event_body       => {:prop1 => "val1", :prop2 => "val2"},
+  # }
 
 end

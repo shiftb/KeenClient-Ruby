@@ -11,14 +11,14 @@ keen.auth_token = auth_token
 
 # Then, you can use that client to send events.  
 
-keen.add_event(:purchases, {
+keen.add_event("purchases", {
   :quantity   => @quantity,
   :user       => @user.hashify,
   :item       => @item.hashify,
   :session    => @session.hashify,
 })
 
-keen.add_event(:pageviews, {
+keen.add_event("pageviews", {
   :user       => @user.hashify,
   :route      => @current_route,
   :session    => @session.hashify,

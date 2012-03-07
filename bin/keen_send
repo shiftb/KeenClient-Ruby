@@ -42,4 +42,4 @@ required.each do |key|
   raise OptionParser::MissingArgument.new(key) if options[key].nil?
 end
 
-Keen::Client.send_logged_queries(options)
+Keen::Client.process_queue(options)
