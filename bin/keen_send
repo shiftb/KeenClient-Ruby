@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
+require 'rubygems'
+require 'optparse'
+require 'keen'
+
+options = {
+  :env => 'production',
+}
+
+required = [
+  :filepath,
+]
+
+begin
+  parser = OptionParser.new()
+  parser.banner = "#{File.basename($0)} [<log_dir>]\n\n"
+
+  parser.on("-e", "--env ENVIRONMENT", "The environment to run in. Default: production") do |e|
+    options[:env] = e
+  end
+
+  parser.on("-f", "--filepath /path/to/log/dir", "The path to the directory where your app is sending events.") do |f|
+    options[:filepath] = f
+  end
+
+  parser.on_tail("-h", "--help", "This help.") do
+    puts parser
+    exit
+  end
+
+  opts = parser.parse(ARGV)
+rescue => e
+  $stderr.puts "\nERROR: #{e.message}\n\n"
+  $stderr.puts parser.help
+  exit(-1)
+end
+
+
+# confirm required options:
+required.each do |key|
+  raise OptionParser::MissingArgument.new(key) if options[key].nil?
+end
+
+Keen::Client.send_logged_queries(options)
