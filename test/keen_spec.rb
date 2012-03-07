@@ -10,6 +10,6 @@ describe Keen::Client do
     FakeWeb.register_uri(:any, %r/https:\/\/api.keen.io\//, :body => '{"message": "You tried to reach Keen"}')
   end
   
-  # TODO spec it, lazy!
+  # TODO spec it out, lazy bones!
 
 end
