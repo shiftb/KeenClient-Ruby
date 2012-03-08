@@ -9,7 +9,7 @@ options = {
 }
 
 required = [
-  :filepath,
+  :storage_mode, # this has to be something understood by Keen::Client.process_queue(options)
 ]
 
 begin
@@ -20,8 +20,8 @@ begin
     options[:env] = e
   end
 
-  parser.on("-f", "--filepath /path/to/log/dir", "The path to the directory where your app is sending events.") do |f|
-    options[:filepath] = f
+  parser.on("-p", "--storage_mode redis|flat_file", "Where is the queue you're reading?") do |f|
+    options[:storage_mode] = f
   end
 
   parser.on_tail("-h", "--help", "This help.") do
@@ -39,7 +39,7 @@ end
 
 # confirm required options:
 required.each do |key|
-  raise OptionParser::MissingArgument.new(key) if options[key].nil?
+  raise OptionParser::MissingArgument.new("you must send `#{key}` when running this command") if options[key].nil?
 end
 
 Keen::Client.process_queue(options)
