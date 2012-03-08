@@ -5,9 +5,7 @@ project_id = 'asdfasldkfjalsdkfalskdfj'
 auth_token = 'asldfjklj325tkl32jaskdlfjaf'
 
 # First you must setup the client:
-keen = Keen::Client.new
-keen.project_id = project_id
-keen.auth_token = auth_token
+keen = Keen::Client.new(project_id, auth_token)
 
 # Then, you can use that client to send events.  
 

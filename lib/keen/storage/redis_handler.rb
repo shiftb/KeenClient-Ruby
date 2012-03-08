@@ -7,6 +7,18 @@ module Keen
     class Item
       # Represents one item in the Redis queue.
       
+      def to_json(options)
+        @event_body.to_json
+      end
+
+      def to_s
+        self.to_json
+      end
+
+      def auth_token
+        @auth_token
+      end
+      
       def initialize(definition={})
         @project_id = definition[:project_id]
         @auth_token = definition[:auth_token]
@@ -116,20 +128,23 @@ module Keen
         # translate the queue strings into Items
         items = queue.map {|json| Keen::Storage::Item.new(JSON.parse json)}.compact
 
-        collated = collate_items_by_project(items)
+        collated = collate_items(items)
       end
 
-      def collate_items_by_project(queue)
+      def collate_items(queue)
         collated = {}
 
         # traverse backwards so the most recent auth tokens take precedent:
         queue.reverse_each do |item_hash|
-          key = item.project_id
-          if not collated.has_key? key
-            collated[key] = Keen::Storage::ProjectBatch.new
+          if not collated.has_key? item.project_id
+            collated[item.project_id] = {}
           end
 
-          collated[key].add_item(item)
+          if not collated[item.project_id].has_key? item.collection_name
+            collated[item.project_id][item.collection_name] = Keen::Storage::ProjectBatch.new
+          end
+
+          collated[item.project_id][item.collection_name].add_item(item)
         end
 
         collated
