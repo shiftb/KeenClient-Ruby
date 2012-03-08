@@ -39,23 +39,23 @@ module Keen
       # TODO: remove this mock:
       collated = {
         "4f5775ad163d666a6100000e" => {
-          "farts" => [
+          "clicks" => [
             Keen::Storage::Item.new({
               :project_id => "4f5775ad163d666a6100000e",
               :auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              :collection_name => "farts",
+              :collection_name => "clicks",
               :event_body => {:user_id => "12345"},
             }),
             Keen::Storage::Item.new({
               :project_id => "4f5775ad163d666a6100000e",
               :auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              :collection_name => "farts",
+              :collection_name => "clicks",
               :event_body => {:user_id => "12345"},
             }),
             Keen::Storage::Item.new({
               :project_id => "4f5775ad163d666a6100000e",
               :auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              :collection_name => "farts",
+              :collection_name => "clicks",
               :event_body => {:user_id => "12345"},
             }),
           ],
