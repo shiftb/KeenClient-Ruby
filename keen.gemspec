@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.email       = ["kyle@keen.io"]
   s.homepage    = "https://github.com/keenlabs/KeenClient-Ruby"
   s.summary     = "A library for sending events to the keen.io API."
-  s.description = "A library for sending events to the keen.io API."
+  s.description = "See the github repo or examples.rb for usage information."
 
   s.rubyforge_project = "keen"
 
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   # s.add_runtime_dependency "rest-client"
   
   s.add_dependency('multi_json', '>= 1.0.3')
+  s.add_dependency('fakeweb', '>= 1.3.0')
   s.add_dependency('system_timer', '>= 1.2.4')
   s.add_dependency('httparty', '>= 0.8.1')
   s.add_dependency('redis', '>= 2.2.2')
