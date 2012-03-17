@@ -9,6 +9,20 @@ describe Keen::Client do
   before :all do
     FakeWeb.register_uri(:any, %r/https:\/\/api.keen.io\//, :body => '{"message": "You tried to reach Keen"}')
   end
+
+  describe "#add_event" do
+    project_id = "4f5775ad163d666a6100000e"
+    auth_token = "a5d4eaf432914823a94ecd7e0cb547b9"
+
+    keen = Keen::Client.new(project_id, auth_token)
+
+    310.times do
+      keen.add_event("rspec_clicks", {
+        :hi => "you",
+      })
+    end
+
+  end
   
   # TODO spec it out, lazy bones!
   #

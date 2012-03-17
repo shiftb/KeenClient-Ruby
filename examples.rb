@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'keen'
  
 # Get these from the keen.io website:
