@@ -1,7 +1,9 @@
+require 'keen/async/storage/redis_handler'
+
 module Keen
-  module Storage
+  module Async
     class Job
-      # Represents one job in the Redis queue.
+      # Represents one job.
       #
       #
 
@@ -16,7 +18,7 @@ module Keen
         self.to_json
       end
       
-      def initialize(definition={})
+      def initialize(handler, definition={})
         @definition = definition
         
         @project_id = definition[:project_id]
@@ -26,12 +28,13 @@ module Keen
         @timestamp = Time.now.utc.iso8601
 
         @definition[:timestamp] = @timestamp
+
+        @handler = handler
         
       end
 
       def save
-        handler = Keen::Storage::RedisHandler.new
-        handler.record_job(self)
+        @handler.record_job(self)
       end
 
     end

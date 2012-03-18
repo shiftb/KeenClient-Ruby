@@ -14,13 +14,17 @@ describe Keen::Client do
     project_id = "4f5775ad163d666a6100000e"
     auth_token = "a5d4eaf432914823a94ecd7e0cb547b9"
 
-    keen = Keen::Client.new(project_id, auth_token)
+    keen = Keen::Client.new(project_id, auth_token, :storage_mode => :redis)
 
     310.times do
       keen.add_event("rspec_clicks", {
         :hi => "you",
       })
     end
+
+    worker = Keen::Async::Worker.new(handler = keen.storage_handler)
+
+    worker.process_queue
 
   end
   

@@ -1,4 +1,5 @@
 require 'keen/client'
 require 'keen/version'
-require 'keen/storage/redis_handler'
-require 'keen/storage/job'
+require 'keen/async/job'
+require 'keen/async/worker'
+require 'keen/async/storage/redis_handler'

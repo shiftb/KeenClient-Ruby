@@ -1,4 +1,5 @@
-require 'keen/storage/redis_handler'
+require 'keen/async/storage/redis_handler'
+require 'keen/async/job'
 require 'json'
 require "net/http"
 require "uri"
@@ -6,23 +7,44 @@ require "uri"
 
 module Keen
 
-  BATCH_SIZE = 100
-
   class Client
 
-    def self.batch_url(project_id)
-      "http://api.keen.io/1.0/projects/#{project_id}/_events"
-    end
-    
-    def initialize(project_id, auth_token)
+    attr_accessor :storage_handler, :project_id, :auth_token
+
+    def initialize(project_id, auth_token, options = {})
+
+      default_options = {
+        :storage_mode => :redis,
+      }
+      
+      options = default_options.update(options)
+
       @project_id = project_id
       @auth_token = auth_token
+      @storage_mode = options[:storage_mode]
+    end
+
+    def handler
+
+      unless @storage_handler
+        mode = @storage_mode
+
+        case mode
+        when :redis
+          @storage_handler = Keen::Async::Storage::RedisHandler.new
+        else
+          raise "Unknown storage_mode sent to client: `#{mode}`"
+        end
+
+      end
+
+      @storage_handler
     end
 
     def add_event(collection_name, event_body)
       validate_collection_name(collection_name)
 
-      job = Keen::Storage::Job.new({
+      job = Keen::Async::Job.new(handler, {
         :project_id => @project_id,
         :auth_token => @auth_token,
         :collection_name => collection_name,
@@ -36,114 +58,5 @@ module Keen
       # TODO
     end
 
-    def self.process_queue(options)
-      mode = options[:storage_mode].to_sym
-      case mode
-      when :flat_file
-        self.process_queue_from_flat_file(options)
-      when :redis
-        self.process_queue_from_redis(options)
-      else
-        raise "Unknown storage_mode sent: `#{mode}`"
-      end
-    end
-
-    def self.process_queue_from_redis(options)
-      handler = Keen::Storage::RedisHandler.new
-
-      queue_length = handler.count_active_queue
-
-      batch_size = Keen::BATCH_SIZE
-
-      num_batches = queue_length / batch_size
-
-      num_batches.times do
-        collated = handler.grab_and_collate(batch_size)
-
-        collated.each do |project_id, batch|
-          self.send_batch(project_id, batch)
-        end
-      end
-
-
-      # TODO: remove this mock:
-      #collated = {
-        #"4f5775ad163d666a6100000e" => {
-          #"clicks" => [
-            #Keen::Storage::Job.new({
-              #:project_id => "4f5775ad163d666a6100000e",
-              #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              #:collection_name => "clicks",
-              #:event_body => {:user_id => "12345"},
-            #}),
-            #Keen::Storage::Job.new({
-              #:project_id => "4f5775ad163d666a6100000e",
-              #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              #:collection_name => "clicks",
-              #:event_body => {:user_id => "12345"},
-            #}),
-            #Keen::Storage::Job.new({
-              #:project_id => "4f5775ad163d666a6100000e",
-              #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              #:collection_name => "clicks",
-              #:event_body => {:user_id => "12345"},
-            #}),
-          #],
-          #"purchases" => [
-            #Keen::Storage::Job.new({
-              #:project_id => "4f5775ad163d666a6100000e",
-              #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              #:collection_name => "purchases",
-              #:event_body => {:user_id => "12345"},
-            #}),
-            #Keen::Storage::Job.new({
-              #:project_id => "4f5775ad163d666a6100000e",
-              #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              #:collection_name => "purchases",
-              #:event_body => {:user_id => "12345"},
-            #}),
-            #Keen::Storage::Job.new({
-              #:project_id => "4f5775ad163d666a6100000e",
-              #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
-              #:collection_name => "purchases",
-              #:event_body => {:user_id => "12345"},
-            #}),
-          #],
-        #}
-      #}
-
-    end
-    
-    def self.send_batch(project_id, batch)
-      if not batch
-        return
-      end
-      
-      first_key = batch.keys[0]
-      job_list = batch[first_key]
-      auth_token = job_list[0].auth_token
-      
-      uri = URI.parse(self.batch_url(project_id))
-
-      request = Net::HTTP::Post.new(uri.path)
-      request.body = batch.to_json
-      request["Content-Type"] = "application/json"
-      request["Authorization"] = auth_token
-
-      response = Net::HTTP.start(uri.host, uri.port) {|http|
-        http.request(request)
-      }
-
-      puts response
-
-      # TODO DK:  need to send this batch of Keen::Storage::Job instances
-      # to API!  we can just use the first auth_token we find on an Job.
-      # If something fails, stick the job into the prior_failures queue
-      # using push
-    end
-
-    def self.process_queue_from_flat_file(options)
-      raise "this feature isn't supported yet!!!"
-    end
   end
 end
