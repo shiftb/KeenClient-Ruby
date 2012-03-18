@@ -1,3 +1,4 @@
 require 'keen/client'
 require 'keen/version'
-require 'keen/storage/flat_file_handler'
+require 'keen/storage/redis_handler'
+require 'keen/storage/job'
