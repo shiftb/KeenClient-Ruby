@@ -5,8 +5,8 @@ require 'time'
 
 module Keen
   module Storage
-    class Item
-      # Represents one item in the Redis queue.
+    class Job
+      # Represents one job in the Redis queue.
       #
       #
 
@@ -36,7 +36,7 @@ module Keen
 
       def save
         handler = Keen::Storage::RedisHandler.new
-        handler.record_item(self)
+        handler.record_job(self)
       end
 
     end
@@ -63,8 +63,8 @@ module Keen
         puts "added #{value} to active queue; length is now #{@redis.llen active_queue_key}"
       end
 
-      def record_item(item)
-        add_to_active_queue JSON.generate(item)
+      def record_job(job)
+        add_to_active_queue JSON.generate(job)
       end
 
       def handle_prior_failures
@@ -84,33 +84,33 @@ module Keen
 
         key = active_queue_key
 
-        items = []
+        jobs = []
 
         how_many.times do
           this = @redis.lpop key
-          items.push JSON.parse this
+          jobs.push JSON.parse this
         end
 
-        collate_items(items)
+        collate_jobs(jobs)
       end
 
-      def collate_items(queue)
+      def collate_jobs(queue)
         collated = {}
 
         # traverse backwards so the most recent auth tokens take precedent:
-        queue.reverse_each do |item_hash|
+        queue.reverse_each do |job_hash|
 
-          item = Keen::Storage::Item.new(item_hash)
+          job = Keen::Storage::Job.new(job_hash)
 
-          if not collated.has_key? item.project_id
-            collated[item.project_id] = {}
+          if not collated.has_key? job.project_id
+            collated[job.project_id] = {}
           end
 
-          if not collated[item.project_id].has_key? item.collection_name
-            collated[item.project_id][item.collection_name] = []
+          if not collated[job.project_id].has_key? job.collection_name
+            collated[job.project_id][job.collection_name] = []
           end
 
-          collated[item.project_id][item.collection_name].push(item)
+          collated[job.project_id][job.collection_name].push(job)
         end
 
         collated

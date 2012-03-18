@@ -8,7 +8,6 @@ module Keen
 
   BATCH_SIZE = 100
 
-
   class Client
 
     def self.batch_url(project_id)
@@ -23,14 +22,14 @@ module Keen
     def add_event(collection_name, event_body)
       validate_collection_name(collection_name)
 
-      item = Keen::Storage::Item.new({
+      job = Keen::Storage::Job.new({
         :project_id => @project_id,
         :auth_token => @auth_token,
         :collection_name => collection_name,
         :event_body => event_body,
       })
 
-      item.save
+      job.save
     end
 
     def validate_collection_name(collection_name)
@@ -71,19 +70,19 @@ module Keen
       #collated = {
         #"4f5775ad163d666a6100000e" => {
           #"clicks" => [
-            #Keen::Storage::Item.new({
+            #Keen::Storage::Job.new({
               #:project_id => "4f5775ad163d666a6100000e",
               #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
               #:collection_name => "clicks",
               #:event_body => {:user_id => "12345"},
             #}),
-            #Keen::Storage::Item.new({
+            #Keen::Storage::Job.new({
               #:project_id => "4f5775ad163d666a6100000e",
               #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
               #:collection_name => "clicks",
               #:event_body => {:user_id => "12345"},
             #}),
-            #Keen::Storage::Item.new({
+            #Keen::Storage::Job.new({
               #:project_id => "4f5775ad163d666a6100000e",
               #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
               #:collection_name => "clicks",
@@ -91,19 +90,19 @@ module Keen
             #}),
           #],
           #"purchases" => [
-            #Keen::Storage::Item.new({
+            #Keen::Storage::Job.new({
               #:project_id => "4f5775ad163d666a6100000e",
               #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
               #:collection_name => "purchases",
               #:event_body => {:user_id => "12345"},
             #}),
-            #Keen::Storage::Item.new({
+            #Keen::Storage::Job.new({
               #:project_id => "4f5775ad163d666a6100000e",
               #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
               #:collection_name => "purchases",
               #:event_body => {:user_id => "12345"},
             #}),
-            #Keen::Storage::Item.new({
+            #Keen::Storage::Job.new({
               #:project_id => "4f5775ad163d666a6100000e",
               #:auth_token => "a5d4eaf432914823a94ecd7e0cb547b9",
               #:collection_name => "purchases",
@@ -121,9 +120,8 @@ module Keen
       end
       
       first_key = batch.keys[0]
-      item_list = batch[first_key]
-      puts item_list[0].class
-      auth_token = item_list[0].auth_token
+      job_list = batch[first_key]
+      auth_token = job_list[0].auth_token
       
       uri = URI.parse(self.batch_url(project_id))
 
@@ -138,9 +136,9 @@ module Keen
 
       puts response
 
-      # TODO DK:  need to send this batch of Keen::Storage::Item instances
-      # to API!  we can just use the first auth_token we find on an Item.
-      # If something fails, stick the item into the prior_failures queue
+      # TODO DK:  need to send this batch of Keen::Storage::Job instances
+      # to API!  we can just use the first auth_token we find on an Job.
+      # If something fails, stick the job into the prior_failures queue
       # using push
     end
 
