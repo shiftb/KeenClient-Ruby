@@ -1,8 +1,8 @@
-require 'keen/async/storage/redis_handler'
-require 'keen/async/job'
-require 'json'
-require "net/http"
+require "keen/async/storage/redis_handler"
+require "keen/async/job"
+require "json"
 require "uri"
+require "time"
 
 
 module Keen
@@ -12,6 +12,9 @@ module Keen
     attr_accessor :storage_handler, :project_id, :auth_token
 
     def initialize(project_id, auth_token, options = {})
+
+      raise "project_id must be string" unless project_id.kind_of? String
+      raise "auth_token must be string" unless auth_token.kind_of? String
 
       default_options = {
         :storage_mode => :redis,
@@ -41,8 +44,22 @@ module Keen
       @storage_handler
     end
 
-    def add_event(collection_name, event_body)
+    def add_event(collection_name, event_body, timestamp=nil)
+      #
+      # `collection_name` should be a string
+      #
+      # `event_body` should be a JSON-serializable hash
+      #
+      # `timestamp` is optional. If sent, it should be a Time instance.  
+      #  If it's not sent, we'll use the current time.
+
       validate_collection_name(collection_name)
+
+      unless timestamp
+        timestamp = Time.now
+      end
+
+      event_body[:_timestamp] = timestamp.utc.iso8601
 
       job = Keen::Async::Job.new(handler, {
         :project_id => @project_id,

@@ -7,7 +7,7 @@ module Keen
       #
       #
 
-      attr_accessor :project_id, :auth_token, :collection_name, :event_body, :timestamp
+      attr_accessor :project_id, :auth_token, :collection_name, :event_body
       
       def to_json(options=nil)
         @definition.to_json
@@ -19,18 +19,44 @@ module Keen
       end
       
       def initialize(handler, definition={})
-        @definition = definition
-        
-        @project_id = definition[:project_id]
-        @auth_token = definition[:auth_token]
-        @collection_name = definition[:collection_name]
-        @event_body = definition[:event_body]
-        @timestamp = Time.now.utc.iso8601
 
-        @definition[:timestamp] = @timestamp
-
+        load_definition(definition)
         @handler = handler
         
+      end
+
+      def load_definition(definition)
+
+        definition = Keen::Utils.symbolize_keys(definition)
+
+        # define some key lists:
+        required_keys = [:project_id, :auth_token, :collection_name, :event_body]
+        optional_keys = []
+        all_keys = required_keys + optional_keys
+
+
+        # don't allow them to send nil values for anything
+        definition.each do |key, value|
+          # reject unrecognized keys:
+          raise "Unrecognized key: #{key}" unless all_keys.include? key.to_sym
+        end
+
+
+        required_keys.each do |key|
+          value = definition[key]
+
+          raise "You sent a nil value for the #{key}." if value.nil?
+        end
+
+
+        all_keys.each do |key|
+          value = definition[key]
+          self.instance_variable_set("@#{key}", value)
+        end
+
+        @definition = definition
+
+
       end
 
       def save

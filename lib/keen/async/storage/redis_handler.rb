@@ -12,7 +12,7 @@ module Keen
         # ----
 
         def global_key_prefix
-          "keen-" + Keen::VERSION
+          "keen_415" + Keen::VERSION
         end
         
         def active_queue_key
@@ -95,7 +95,6 @@ module Keen
           #    }
           #  }
 
-
           handle_prior_failures
 
           key = active_queue_key
@@ -113,10 +112,9 @@ module Keen
         def collate_jobs(queue)
           collated = {}
 
-          # traverse backwards so the most recent auth tokens take precedent:
-          queue.reverse_each do |job_hash|
+          queue.each do |job_hash|
 
-            job = Keen::Async::Job.new(job_hash)
+            job = Keen::Async::Job.new(self, job_hash)
 
             if not collated.has_key? job.project_id
               collated[job.project_id] = {}

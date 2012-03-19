@@ -1,4 +1,6 @@
-require 'keen/async/storage/redis_handler'
+require "keen/async/storage/redis_handler"
+require "net/http"
+require "net/https"
 
 
 
@@ -8,6 +10,7 @@ module Keen
 
     # How many events should we send over the wire at a time?
     BATCH_SIZE = 100
+    SSL_CA_FILE = File.dirname(__FILE__) + '../../../conf/cacert.pem'
      
     class Worker
 
@@ -16,7 +19,10 @@ module Keen
       end
 
       def batch_url(project_id)
-        "http://api.keen.io/1.0/projects/#{project_id}/_events"
+        if not project_id
+          raise "Missing project_id."
+        end
+        "https://api.keen.io/1.0/projects/#{project_id}/_events"
       end
 
       def process_queue
@@ -29,7 +35,6 @@ module Keen
 
         num_batches.times do
           collated = @handler.get_collated_jobs(batch_size)
-
           collated.each do |project_id, batch|
             send_batch(project_id, batch)
           end
@@ -46,20 +51,27 @@ module Keen
         auth_token = job_list[0].auth_token
         
         uri = URI.parse(batch_url(project_id))
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        http.ca_file = Keen::Async::SSL_CA_FILE
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        http.verify_depth = 5
 
         request = Net::HTTP::Post.new(uri.path)
         request.body = batch.to_json
         request["Content-Type"] = "application/json"
         request["Authorization"] = auth_token
 
-        response = Net::HTTP.start(uri.host, uri.port) {|http|
-          http.request(request)
-        }
+        response = http.request(request)
+
+        #response = Net::HTTP.start(uri.host, uri.port) {|http|
+          #http.request(request)
+        #}
 
         puts response
-
-        # TODO:
-        # If something fails, we should move the job to the prior_failures queue by calling:
+        # TODO: If something fails, we should move the job to the 
+        # prior_failures queue by calling, perhaps:
+        #
         # @handler.log_failed_job(job)
       end
 

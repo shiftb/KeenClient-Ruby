@@ -1,7 +1,7 @@
-$LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
+$LOAD_PATH << File.join(File.dirname(__FILE__), "..", "lib")
 
-require 'keen'
-require 'fakeweb'
+require "keen"
+require "fakeweb"
 
 describe Keen::Client do
 

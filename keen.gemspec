@@ -23,8 +23,9 @@ Gem::Specification.new do |s|
   # s.add_runtime_dependency "rest-client"
   
   s.add_dependency('json', '>= 1.6.5')
+  s.add_dependency('fakeweb', '>= 1.3.0')
+  s.add_dependency('rspec', '>= 2.9.0')
   s.add_dependency('system_timer', '>= 1.2.4')
-  s.add_dependency('httparty', '>= 0.8.1')
   s.add_dependency('redis', '>= 2.2.2')
 
   # took these from Twilio library:
