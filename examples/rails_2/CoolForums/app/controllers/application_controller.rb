@@ -18,7 +18,7 @@ class ApplicationController < ActionController::Base
     auth_token = "a5d4eaf432914823a94ecd7e0cb547b9"
 
     # First you must setup the client:
-    keen = Keen::Client.new(project_id, auth_token)
+    keen = Keen::Client.new(project_id, auth_token, :storage_mode => :redis)
 
     # Log the event with Keen:
     keen.add_event("pageviews", {
