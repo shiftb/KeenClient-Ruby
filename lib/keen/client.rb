@@ -30,15 +30,7 @@ module Keen
     def handler
 
       unless @storage_handler
-        mode = @storage_mode
-
-        case mode
-        when :redis
-          @storage_handler = Keen::Async::Storage::RedisHandler.new
-        else
-          raise "Unknown storage_mode sent to client: `#{mode}`"
-        end
-
+        @storage_handler = self.class.create_new_storage_handler(@storage_mode)
       end
 
       @storage_handler
@@ -73,6 +65,15 @@ module Keen
 
     def validate_collection_name(collection_name)
       # TODO
+    end
+
+    def self.create_new_storage_handler(storage_mode)
+      case storage_mode.to_sym
+      when :redis
+        Keen::Async::Storage::RedisHandler.new
+      else
+        raise "Unknown storage_mode sent to client: `#{storage_mode}`"
+      end
     end
 
   end

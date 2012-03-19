@@ -42,4 +42,6 @@ required.each do |key|
   raise OptionParser::MissingArgument.new("you must send `#{key}` when running this command") if options[key].nil?
 end
 
-Keen::Client.process_queue(options)
+storage_handler = Keen::Client.create_new_storage_handler(options[:storage_mode])
+worker = Keen::Async::Worker.new(storage_handler)
+worker.process_queue
