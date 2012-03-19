@@ -44,4 +44,4 @@ end
 
 storage_handler = Keen::Client.create_new_storage_handler(options[:storage_mode])
 worker = Keen::Async::Worker.new(storage_handler)
-worker.process_queue
+puts worker.process_queue
