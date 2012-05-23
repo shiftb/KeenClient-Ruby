@@ -39,6 +39,10 @@ module Keen
         def initialize
           @redis = Redis.new
         end
+        
+        def redis=(connection)
+          @redis = connection
+        end
 
         def count_active_queue
           @redis.llen active_queue_key
